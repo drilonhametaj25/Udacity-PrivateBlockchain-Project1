@@ -154,7 +154,7 @@ class Blockchain {
     getBlockByHash(hash) {
         let self = this;
         return new Promise((resolve, reject) => {
-           let find = self.find((x) => x.hash == hash)
+           let find = self.chain.find((x) => x.hash == hash)
            if(find){
                resolve(find)
            }else{
@@ -171,7 +171,7 @@ class Blockchain {
     getBlockByHeight(height) {
         let self = this;
         return new Promise((resolve, reject) => {
-            let block = self.chain.filter(p => p.height === height)[0];
+            let block = self.chain.find(p => p.height === height)[0];
             if(block){
                 resolve(block);
             } else {
@@ -191,7 +191,7 @@ class Blockchain {
         let stars = [];
         return new Promise((resolve, reject) => {
             self.chain.forEach(async (x) => {
-                let block = x.getBData()
+                let block = await x.getBData()
                 if(block.address == address) stars.push(block)
             })
             resolve(stars)
@@ -211,11 +211,6 @@ class Blockchain {
             // Check every block
             const promises = self.chain.map(function(block, i) {
               return new Promise(function(resolve1, rej) {
-                  // Check for Genesis block
-                if (block.height === 0) {
-                  return resolve1();
-                }
-  
                 // Check validateing block
                 block.validate().then(function(validBlock) {
                     // If not valid push error to errorLog array
@@ -225,7 +220,7 @@ class Blockchain {
                   }
   
                   // Check previoushash
-                  if (block.previousBlockHash != self.chain[i-1].hash) {
+                  if (i>0 && block.previousBlockHash != self.chain[i-1].hash) {
                     errorLog.push({error: {msg: 'The block #' + block.height + ' is invalid.'}});
                   }
                   return resolve1();
