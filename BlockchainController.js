@@ -121,7 +121,7 @@ class BlockchainController {
 
     validateChain() {
         this.app.get("/validate/validateChain", async (req, res) => {
-            this.blockchain.validateChain()            
+            await this.blockchain.validateChain()            
         });
     }
 
