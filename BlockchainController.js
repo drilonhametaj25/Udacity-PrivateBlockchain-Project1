@@ -118,6 +118,10 @@ class BlockchainController {
         });
     }
 
+    callValidateChain(){
+        this.blockchain.validateChain()
+    }
+
 }
 
 module.exports = (app, blockchainObj) => { return new BlockchainController(app, blockchainObj);}

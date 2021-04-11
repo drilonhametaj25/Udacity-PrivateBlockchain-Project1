@@ -74,7 +74,12 @@ class Blockchain {
             block.hash = SHA256(JSON.stringify(block)).toString()
             this.chain.push(block)
             this.height += 1
-            resolve(block)
+            self.validateChain().then((err) => {
+            if(err.length > 0){
+                    return reject(new Error('CHAIN ERROR: Block with errors'))
+                }
+                resolve(block)
+            })
         });
     }
 
@@ -202,15 +207,36 @@ class Blockchain {
     validateChain() {
         let self = this;
         let errorLog = [];
-        
         return new Promise(async (resolve, reject) => {
-            self.chain.forEach(block => {
-                if(!block.validate()){
-                    errorLog.push(block)
+            // Check every block
+            const promises = self.chain.map(function(block, i) {
+              return new Promise(function(resolve1, rej) {
+                  // Check for Genesis block
+                if (block.height === 0) {
+                  return resolve1();
                 }
-            })
-            resolve(errorLog)
-        });
+  
+                // Check validateing block
+                block.validate().then(function(validBlock) {
+                    // If not valid push error to errorLog array
+                  if (!validBlock) {
+                    errorLog.push({error: {msg: 'The block #' + block.height + ' is invalid.'}});
+                    return resolve1();
+                  }
+  
+                  // Check previoushash
+                  if (block.previousBlockHash != self.chain[i-1].hash) {
+                    errorLog.push({error: {msg: 'The block #' + block.height + ' is invalid.'}});
+                  }
+                  return resolve1();
+                });
+              });
+            });
+  
+            Promise.all(promises).then(function() {
+              return resolve(errorLog);
+            });
+          });
     }
 
 }

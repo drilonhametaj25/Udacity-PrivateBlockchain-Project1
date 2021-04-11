@@ -13,6 +13,7 @@ const bodyParser = require("body-parser");
  * Require the Blockchain class. This allow us to have only one instance of the class.
  */
 const BlockChain = require('./src/blockchain.js');
+const BlockchainController = require("./BlockchainController.js");
 
 class ApplicationServer {
 
@@ -32,7 +33,7 @@ class ApplicationServer {
 	}
 
 	initExpress() {
-		this.app.set("port", 8000);
+		this.app.set("port", 3000);
 	}
 
 	initExpressMiddleWare() {
@@ -47,6 +48,14 @@ class ApplicationServer {
 
 	start() {
 		let self = this;
+		this.app.get("/validate-chain", async (req, res) => {
+			this.blockchain.validateChain().then((err) => {
+				if(err.length > 0 ){
+					return res.status(400).json(err);    
+				}
+				return res.status(200).json("Everything ok");    
+			})
+        });
 		this.app.listen(this.app.get("port"), () => {
 			console.log(`Server Listening for port: ${self.app.get("port")}`);
 		});
