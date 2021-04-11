@@ -202,6 +202,7 @@ class Blockchain {
     validateChain() {
         let self = this;
         let errorLog = [];
+        
         return new Promise(async (resolve, reject) => {
             self.chain.forEach(block => {
                 if(!block.validate()){
